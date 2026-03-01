@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Livro da Vida</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #080a08;
+            --panel: #121412;
+            --accent: #2d3d2d;
+            --text: #c2cfc2;
+            --hi: #7a8b7a;
+            --danger: #5c2020;
+            --success: #2d5c2d;
+            --border: #2a332a;
+            --input-bg: #050505;
+            --feral-red: #8b0000;
+            --ritual-purple: #4b0082;
+            --highlight: #7a8b7a;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        /* ===== FERAL BANNER ===== */
+        #feral-banner {
+            display: none; position: sticky; top: 0; width: 100%;
+            background: var(--feral-red); color: white; padding: 10px;
+            text-align: center; z-index: 1000;
+            border-bottom: 3px solid #ff0000;
+            flex-direction: column; gap: 8px; align-items: center;
+        }
+        
+        .feral-msg { font-weight: 900; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        
+        .btn-delete-feral {
+            background: #ff0000; color: white; border: 2px solid white;
+            padding: 6px 18px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 0.75rem;
+        }
+        
+        .is-feral-mode input, .is-feral-mode textarea, .is-feral-mode select { pointer-events: none !important; }
+        .is-feral-mode #btn-ritual, #modal-ritual, #modal-ritual * { pointer-events: auto !important; }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            background: rgba(0,0,0,0.7); padding: 8px 12px;
+            display: flex; align-items: center; gap: 6px;
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+        }
+        
+        .topbar select {
+            flex: 1; background: var(--input-bg); color: white;
+            border: 1px solid var(--border); padding: 6px 8px;
+            border-radius: 4px; font-size: 0.8rem;
+        }
+        
+        .topbar .btn {
+            padding: 6px 10px; border: none; border-radius: 4px;
+            cursor: pointer; font-weight: bold; font-size: 0.7rem;
+            color: white; white-space: nowrap;
+        }
+        
+        .btn-new { background: var(--accent); }
+        .btn-save { background: var(--success); }
+        .btn-export { background: #1a3a5c; color: #7ab3e0; border: 1px solid #2a5a8c; }
+        .btn-import { background: #3a1a5c; color: #b07ae0; border: 1px solid #6a2a9c; }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        #file-import-input, #file-photo-input { display: none; }
+
+        /* ===== TÍTULO + FOTO ===== */
+        .sheet-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px 6px;
+        }
+        
+        .profile-photo-wrap { position: relative; flex-shrink: 0; }
+        
+        .profile-photo {
+            width: 60px; height: 60px;
+            border: 2px solid var(--border); border-radius: 4px;
+            background: #0a0f0a; object-fit: cover; display: block;
+        }
+        
+        .profile-photo-placeholder {
+            width: 60px; height: 60px;
+            border: 2px dashed var(--border); border-radius: 4px;
+            background: #0a0f0a;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 3px;
+            cursor: pointer;
+        }
+        
+        .profile-photo-placeholder i { font-size: 1.2rem; color: #444; }
+        .profile-photo-placeholder span { font-size: 0.45rem; color: #444; text-transform: uppercase; }
+        
+        .btn-photo-change {
+            position: absolute; bottom: 3px; right: 3px;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--accent); border: 1px solid var(--hi);
+            color: var(--hi); font-size: 0.55rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .sheet-title {
+            flex: 1; font-size: 1.2rem; letter-spacing: 3px;
+            color: var(--hi); font-weight: 900;
+        }
+
+        /* ===== SEÇÃO BASE ===== */
+        .section { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+        
+        .section-title {
+            font-size: 0.6rem; font-weight: bold; color: var(--hi);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+            border-left: 3px solid var(--hi); padding-left: 8px;
+        }
+
+        /* ===== HEADER FIELDS ===== */
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .header-grid .full { grid-column: 1 / -1; }
+        
+        .field-group { display: flex; flex-direction: column; gap: 3px; }
+        
+        .field-group label {
+            font-size: 0.6rem; font-weight: bold; color: var(--hi); text-transform: uppercase;
+        }
+        
+        .field-group input, .field-group select {
+            background: var(--input-bg); color: white;
+            border: 1px solid var(--border); padding: 8px;
+            border-radius: 4px; font-size: 0.85rem; width: 100%;
+        }
+        
+        .selector-display {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--input-bg); border: 1px solid var(--border);
+            padding: 8px; border-radius: 4px; min-height: 36px;
+        }
+        
+        .display-text { font-weight: bold; font-size: 0.75rem; color: white; flex: 1; text-align: center; }
+
+        /* ===== STATUS GRID ===== */
+        .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        
+        .status-box {
+            background: #1a1a1a; padding: 8px 4px;
+            text-align: center; border-top: 3px solid var(--hi); border-radius: 4px;
+        }
+        
+        .status-label {
+            font-size: 0.55rem; color: var(--hi); font-weight: bold; display: block; margin-bottom: 4px;
+        }
+        
+        .status-input {
+            font-size: 1rem; width: 100%; text-align: center;
+            border: none; background: transparent; color: white; font-weight: bold; padding: 0;
+        }
+        
+        .btn-circle {
+            width: 20px; height: 20px; border-radius: 50%;
+            border: none; background: var(--accent); color: white;
+            cursor: pointer; font-size: 11px;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        
+        .btn-circle:disabled { opacity: 0.15; cursor: not-allowed; }
+        
+        .status-controls { display: flex; align-items: center; justify-content: center; gap: 3px; }
+        .big-number { font-size: 1rem; display: block; font-weight: bold; color: white; }
+
+        /* ===== PONTOS ===== */
+        .points-badge {
+            background: var(--accent); color: white; padding: 8px;
+            border-radius: 4px; text-align: center;
+            font-weight: bold; font-size: 0.85rem; border: 1px solid var(--hi);
+        }
+
+        /* ===== ATRIBUTOS ===== */
+        .attr-card {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+            border-radius: 4px; margin-bottom: 8px; overflow: hidden;
+        }
+        
+        .attr-main {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.05); padding: 8px 12px;
+        }
+        
+        .attr-sigla { font-weight: 900; font-size: 1rem; color: white; letter-spacing: 1px; }
+        
+        .attr-controls { display: flex; align-items: center; gap: 8px; }
+        
+        .attr-val {
+            font-size: 1.2rem; font-weight: bold; color: var(--hi); min-width: 25px; text-align: center;
+        }
+        
+        .pericia-list { padding: 4px 10px 6px; }
+        
+        .pericia-item {
+            display: flex; justify-content: space-between;
+            font-size: 0.7rem; padding: 2px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .pericia-item b { color: var(--hi); }
+
+        /* ===== ABATES ===== */
+        .abates-card {
+            background: rgba(255,255,255,0.02); border: 1px solid #5c2020;
+            border-radius: 4px; padding: 10px 12px; margin-top: 8px;
+        }
+        
+        .abates-row { display: flex; align-items: center; justify-content: space-between; }
+        
+        .abates-controls { display: flex; align-items: center; gap: 6px; }
+        
+        .abates-controls input {
+            width: 60px; text-align: center;
+            background: transparent; border: none; color: white;
+            font-weight: bold; font-size: 1rem;
+        }
+        
+        .abates-label { font-size: 0.6rem; color: #a55; margin-top: 4px; }
+
+        /* ===== ANIMALIA ===== */
+        .animalia-box {
+            background: #1a1a1a; padding: 8px 4px;
+            text-align: center; border-top: 3px solid #5c2020; border-radius: 4px;
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+        }
+        
+        .btn-ritual {
+            display: none; background: var(--ritual-purple); color: white;
+            padding: 4px 8px; font-size: 0.6rem; border-radius: 2px;
+            border: 1px solid #7b68ee; cursor: pointer;
+            margin-top: 6px; width: 100%; font-weight: bold; text-transform: uppercase;
+        }
+
+        /* ===== TABS NAV ===== */
+        .tab-nav {
+            display: flex; background: #0a0c0a;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        
+        .tab-nav::-webkit-scrollbar { display: none; }
+        
+        .tab-btn {
+            padding: 10px 14px; font-size: 0.65rem; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 0.5px; color: #555;
+            border: none; background: transparent; cursor: pointer;
+            white-space: nowrap; border-bottom: 2px solid transparent; transition: all 0.2s;
+        }
+        
+        .tab-btn.active { color: var(--hi); border-bottom-color: var(--hi); }
+
+        /* ===== TAB CONTENT ===== */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ===== TEXTAREA ===== */
+        textarea {
+            width: 100%; min-height: 90px; font-size: 0.85rem; line-height: 1.4;
+            font-family: inherit; background: var(--input-bg); color: white;
+            border: 1px solid var(--border); padding: 8px; border-radius: 4px; resize: vertical;
+        }
+        
+        .text-box { margin-bottom: 12px; }
+        
+        .text-box h3 {
+            font-size: 0.7rem; border-left: 3px solid var(--hi);
+            padding-left: 8px; margin: 0 0 6px 0; color: var(--text); text-transform: uppercase;
+        }
+
+        /* ===== HABILIDADES ===== */
+        .hab-panel { display: flex; flex-direction: column; gap: 6px; }
+        .hab-empty { color: #555; font-size: 0.75rem; font-style: italic; }
+        
+        .hab-section-title {
+            font-size: 0.6rem; font-weight: bold; color: var(--hi);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-top: 4px; border-bottom: 1px solid var(--border); padding-bottom: 2px;
+        }
+        
+        .hab-item {
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            border-radius: 3px; padding: 8px 10px; font-size: 0.75rem; color: #ddd; cursor: pointer;
+        }
+        
+        .hab-item-header { display: flex; align-items: center; gap: 6px; }
+        
+        .hab-badge {
+            font-size: 0.55rem; font-weight: bold; padding: 1px 5px; border-radius: 2px; text-transform: uppercase;
+        }
+        
+        .badge-hab { background: #1a3a1a; color: #6dbf6d; border: 1px solid #2d5c2d; }
+        .badge-pass { background: #1a1a3a; color: #6d6dbf; border: 1px solid #2d2d5c; }
+        .badge-lvl5 { background: #3a1a00; color: #bf8b3a; border: 1px solid #5c3a00; }
+        
+        .hab-desc {
+            display: none; margin-top: 8px; font-size: 0.7rem; color: #aaa;
+            line-height: 1.5; border-top: 1px solid var(--border); padding-top: 6px;
+        }
+        
+        .hab-item.open .hab-desc { display: block; }
+
+        /* ===== MODAL ===== */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); z-index: 2000;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        
+        .modal-body {
+            background: #111; margin: 20px 12px; padding: 16px;
+            border: 1px solid var(--hi); border-radius: 6px;
+        }
+        
+        .modal-body h2 { color: var(--hi); margin-top: 0; font-size: 1rem; }
+        
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .option-item {
+            background: #1a1a1a; padding: 10px;
+            border: 1px solid #222; border-radius: 4px; cursor: pointer;
+        }
+        
+        .option-item:active { border-color: var(--hi); background: #222; }
+
+        /* ===== MODAL RITUAL ===== */
+        #modal-ritual { justify-content: center; align-items: flex-start; padding-top: 60px; }
+        
+        .ritual-modal-inner {
+            background: #111; padding: 24px 16px; border: 1px solid #7b68ee;
+            border-radius: 6px; text-align: center; margin: 12px;
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #0a0c0a; border-top: 1px solid var(--border);
+            display: flex; z-index: 500;
+        }
+        
+        .bottom-nav .nav-btn {
+            flex: 1; padding: 10px 4px 8px; font-size: 0.55rem; font-weight: bold;
+            text-transform: uppercase; color: #555; border: none; background: transparent;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center;
+            gap: 3px; letter-spacing: 0.3px;
+        }
+        
+        .bottom-nav .nav-btn i { font-size: 1rem; }
+        .bottom-nav .nav-btn.active { color: var(--hi); }
+
+        /* ===== TOAST ===== */
+        .save-toast {
+            position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+            background: var(--success); color: white; padding: 8px 20px;
+            border-radius: 20px; display: none; z-index: 3000; font-size: 0.8rem; font-weight: bold;
+        }
+
+        /* ===== DELETE BTN ===== */
+        .btn-delete {
+            background: var(--danger); color: white; border: none;
+            padding: 10px; border-radius: 4px; font-weight: bold;
+            font-size: 0.75rem; cursor: pointer; width: 100%; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body id="sheet-body">
+    <!-- FERAL BANNER -->
+    <div id="feral-banner">
+        <div class="feral-msg">■ ESTADO FERAL — RACIONALIDADE PERDIDA</div>
+        <button class="btn-delete-feral" onclick="deleteCharacter()">Excluir Ficha</button>
+    </div>
+
+    <!-- TOP BAR -->
+    <div class="topbar" id="manager-controls">
+        <select id="char-selector" onchange="switchCharacter()"></select>
+        <button class="btn btn-new" id="btn-new" onclick="createNewCharacter()"><i class="fas fa-plus"></i></button>
+        <button class="btn btn-save" id="btn-save" onclick="saveCurrentCharacter()"><i class="fas fa-save"></i></button>
+        <button class="btn btn-export" onclick="exportarSave()" title="Exportar"><i class="fas fa-download"></i></button>
+        <button class="btn btn-import" onclick="document.getElementById('file-import-input').click()" title="Importar"><i class="fas fa-upload"></i></button>
+        <input type="file" id="file-import-input" accept=".json" onchange="importarSave(event)">
+    </div>
+
+    <!-- TÍTULO + FOTO -->
+    <div class="sheet-header" id="main-container">
+        <div class="profile-photo-wrap" id="profile-wrap">
+            <div class="profile-photo-placeholder" id="profile-placeholder"
+                onclick="document.getElementById('file-photo-input').click()" title="Foto de perfil">
+                <i class="fas fa-user"></i>
+                <span>Foto</span>
+            </div>
+            <img id="profile-img" class="profile-photo" src="" alt="" style="display:none;"
+                onclick="document.getElementById('file-photo-input').click()">
+            <button class="btn-photo-change" onclick="document.getElementById('file-photo-input').click()">
+                <i class="fas fa-camera"></i>
+            </button>
+        </div>
+        <input type="file" id="file-photo-input" accept="image/*" onchange="carregarFoto(event)">
+        <div class="sheet-title">LIVRO DA VIDA</div>
+    </div>
+
+    <!-- TABS NAV -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="showTab('tab-info', this)">INFO</button>
+        <button class="tab-btn" onclick="showTab('tab-status', this)">STATUS</button>
+        <button class="tab-btn" onclick="showTab('tab-attrs', this)">ATRIBUTOS</button>
+        <button class="tab-btn" onclick="showTab('tab-habs', this)">HABILIDADES</button>
+        <button class="tab-btn" onclick="showTab('tab-notas', this)">NOTAS</button>
+    </div>
+
+    <!-- TAB: INFO -->
+    <div id="tab-info" class="tab-content active section">
+        <div class="header-grid">
+            <div class="field-group full">
+                <label>Nome do Herói</label>
+                <input type="text" id="char-name" placeholder="Ex: Norne">
+            </div>
+            <div class="field-group">
+                <label>Classe (Auto)</label>
+                <div class="selector-display" style="background:rgba(255,255,255,0.03);">
+                    <div id="class-display-name" class="display-text">NENHUMA</div>
+                    <i class="fas fa-lock" style="color:#444;font-size:0.8rem;"></i>
+                </div>
+            </div>
+            <div class="field-group">
+                <label>Origem (Raça)</label>
+                <div class="selector-display">
+                    <div id="raca-display-name" class="display-text">NENHUMA</div>
+                    <i id="raca-icon" class="fas fa-dna" style="cursor:pointer;color:var(--hi)" onclick="openModal('modal-raca')"></i>
+                </div>
+            </div>
+            <div class="field-group">
+                <label>Nível (Máx 8)</label>
+                <input type="number" id="char-lv" value="1" min="1" max="8" oninput="updateUI()">
+            </div>
+            <div class="field-group">
+                <label>Idade</label>
+                <input type="number" id="char-age" value="20">
+            </div>
+            <div class="field-group full">
+                <label>Altura</label>
+                <input type="text" id="char-height" readonly style="text-align:center;color:var(--hi);">
+            </div>
+        </div>
+        <div style="margin-top:16px;">
+            <button class="btn-delete" onclick="deleteCharacter()">■ Deletar Ficha Atual</button>
+        </div>
+    </div>
+
+    <!-- TAB: STATUS -->
+    <div id="tab-status" class="tab-content section">
+        <div class="status-grid">
+            <div class="status-box" style="border-top-color:#a33;">
+                <span class="status-label">HP MÁX</span>
+                <div class="status-controls">
+                    <button class="btn-circle" onclick="modStatus('hp',-1)">-</button>
+                    <input type="text" id="pv-val" class="status-input" style="width:50px;" value="0" oninput="onStatusInput('hp')">
+                    <button class="btn-circle" onclick="modStatus('hp',1)">+</button>
+                </div>
+            </div>
+            <div class="status-box" style="border-top-color:#33a;">
+                <span class="status-label">DEFESA (CA)</span>
+                <div class="status-controls">
+                    <button class="btn-circle" onclick="modStatus('ca',-1)">-</button>
+                    <input type="text" id="ca-display" class="status-input" style="width:50px;" value="0" oninput="onStatusInput('ca')">
+                    <button class="btn-circle" onclick="modStatus('ca',1)">+</button>
+                </div>
+            </div>
+            <div class="status-box" style="border-top-color:#3aa;">
+                <span class="status-label">ARMADURA (AR)</span>
+                <div class="status-controls">
+                    <button class="btn-circle" onclick="modStatus('ar',-1)">-</button>
+                    <input type="text" id="ar-val" class="status-input" style="width:50px;" value="0" oninput="onStatusInput('ar')">
+                    <button class="btn-circle" onclick="modStatus('ar',1)">+</button>
+                </div>
+            </div>
+            <div class="status-box">
+                <span class="status-label">CÍRCULOS</span>
+                <div class="status-controls">
+                    <button class="btn-circle" onclick="modStatus('circ',-1)">-</button>
+                    <input type="number" id="circles-val" class="status-input" style="width:50px;" value="0" oninput="onStatusInput('circ')">
+                    <button class="btn-circle" onclick="modStatus('circ',1)">+</button>
+                </div>
+            </div>
+            <div class="status-box">
+                <span class="status-label">CARGA (KG)</span>
+                <span class="big-number" id="kg-val">0</span>
+            </div>
+            <div class="animalia-box">
+                <span class="status-label">ANIMALIA</span>
+                <div class="status-controls">
+                    <button class="btn-circle btn-mod-animalia" onclick="modAnimalia(-1)">-</button>
+                    <input type="number" id="animalia-val" class="status-input" style="width:45px;" value="0" oninput="onAnimaliaInput(this.value)">
+                    <button class="btn-circle btn-mod-animalia" onclick="modAnimalia(1)">+</button>
+                </div>
+                <button id="btn-ritual" class="btn-ritual" onclick="realizarRitual()">RITUAIS</button>
+            </div>
+        </div>
+
+        <!-- ABATES -->
+        <div class="abates-card">
+            <div class="abates-row">
+                <span style="font-weight:900;font-size:0.9rem;color:white;">ABATES</span>
+                <div class="abates-controls">
+                    <button class="btn-circle btn-mod-abates" onclick="modAbates(-1)">-</button>
+                    <input type="number" id="abates-input" value="0" oninput="syncAbates(this.value)">
+                    <button class="btn-circle btn-mod-abates" onclick="modAbates(1)">+</button>
+                </div>
+            </div>
+            <div class="abates-label">Cada 50 abates = +1 Animalia (Máx <span id="max-animalia-label">10</span>)</div>
+        </div>
+    </div>
+
+    <!-- TAB: ATRIBUTOS -->
+    <div id="tab-attrs" class="tab-content section">
+        <div class="points-badge" style="margin-bottom:10px;">
+            PONTOS RESTANTES: <span id="points-left">0</span>
+        </div>
+        <div id="attr-container"></div>
+    </div>
+
+    <!-- TAB: HABILIDADES -->
+    <div id="tab-habs" class="tab-content section">
+        <div id="hab-panel" class="hab-panel">
+            <span class="hab-empty">Selecione uma raça para ver as habilidades.</span>
+        </div>
+    </div>
+
+    <!-- TAB: NOTAS -->
+    <div id="tab-notas" class="tab-content section">
+        <div class="text-box"><h3>Itens / Equipamento</h3><textarea id="itens"></textarea></div>
+        <div class="text-box"><h3>Rituais</h3><textarea id="rituais" placeholder="Rituais realizados aparecem aqui"></textarea></div>
+        <div class="text-box"><h3>Pactos e Juramentos</h3><textarea id="pactos"></textarea></div>
+        <div class="text-box"><h3>Maldição</h3><textarea id="maldição-text"></textarea></div>
+        <div class="text-box"><h3 style="border-color:#8b7a7a;">Evolução de Animalia (Notas)</h3><textarea id="curse-text"></textarea></div>
+    </div>
+
+    <!-- MODAL RAÇA -->
+    <div id="modal-raca" class="modal">
+        <div class="modal-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h2 style="margin:0;">ESCOLHA SUA ORIGEM</h2>
+                <i class="fas fa-times" style="cursor:pointer;font-size:1.2rem;" onclick="closeModal('modal-raca')"></i>
+            </div>
+            <div class="grid-options" id="raca-options"></div>
+            <button onclick="closeModal('modal-raca')" style="width:100%;margin-top:16px;padding:12px;cursor:pointer;background:#222;color:white;border:1px solid #444;">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL RITUAL -->
+    <div id="modal-ritual" class="modal" style="z-index:3000;">
+        <div class="ritual-modal-inner">
+            <div style="font-size:2rem;margin-bottom:8px;">■</div>
+            <h2 id="ritual-modal-title" style="color:#7b68ee;margin:0 0 10px;font-size:1rem;text-transform:uppercase;"></h2>
+            <p id="ritual-modal-desc" style="color:var(--text);font-size:0.85rem;margin-bottom:20px;line-height:1.4;"></p>
+            <div style="display:flex;gap:10px;justify-content:center;">
+                <button onclick="confirmarRitual()" style="background:#4b0082;color:white;border:1px solid #7b68ee;padding:12px 20px;border-radius:4px;font-weight:bold;">CONFIRMAR</button>
+                <button onclick="document.getElementById('modal-ritual').style.display='none'" style="background:#222;color:white;border:1px solid #444;padding:12px 20px;border-radius:4px;">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="save-toast" id="toast">✓ SALVO</div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" onclick="showTab('tab-info', this); setNav(this)"><i class="fas fa-info-circle"></i><span>INFO</span></button>
+        <button class="nav-btn" onclick="showTab('tab-status',this); setNav(this)"><i class="fas fa-heart"></i><span>STATUS</span></button>
+        <button class="nav-btn" onclick="showTab('tab-attrs', this); setNav(this)"><i class="fas fa-chart-bar"></i><span>ATRIB</span></button>
+        <button class="nav-btn" onclick="showTab('tab-habs', this); setNav(this)"><i class="fas fa-bolt"></i><span>HABIL</span></button>
+        <button class="nav-btn" onclick="showTab('tab-notas', this); setNav(this)"><i class="fas fa-book"></i><span>NOTAS</span></button>
+    </nav>
+
+    <script>
+        // ===== RAÇAS =====
+        const racas = [
+            { nome: 'Arapaima', classe: 'Brutamontes', con:3, for:5, des:2, int:0, ins:0, car:-2, ca:10, altura:2.2, circulos:0 },
+            { nome: 'Axolot', classe: 'Clérigo', con:2, for:-2, des:0, int:3, ins:1, car:4, ca:8, altura:1.4, circulos:3 },
+            { nome: 'Bagre', classe: 'Tank', con:5, for:2, des:-2, int:0, ins:0, car:3, ca:12, altura:1.8, circulos:0 },
+            { nome: 'Electrophorus',classe: 'Brutamontes', con:3, for:4, des:-2, int:2, ins:1, car:0, ca:10, altura:2.0, circulos:2 },
+            { nome: 'Feralligator', classe: 'Monstro Guerreiro', con:3, for:3, des:-2, int:3, ins:1, car:0, ca:12, altura:2.5, circulos:0 },
+            { nome: 'Jaraia', classe: 'Mago', con:1, for:-2, des:0, int:5, ins:0, car:4, ca:8, altura:1.5, circulos:4 },
+            { nome: 'Labroide', classe: 'Mago', con:2, for:1, des:4, int:2, ins:0, car:4, ca:10, altura:1.6, circulos:3 },
+            { nome: 'Lagostin', classe: 'Monstro Guerreiro', con:2, for:3, des:4, int:1, ins:-2, car:0, ca:14, altura:1.3, circulos:0 },
+            { nome: 'Medusozoa', classe: 'Mago', con:0, for:-2, des:1, int:5, ins:0, car:4, ca:8, altura:1.8, circulos:5 },
+            { nome: 'Orcinus', classe: 'Monstro Guerreiro', con:2, for:2, des:2, int:4, ins:0, car:-2, ca:12, altura:2.8, circulos:2 },
+            { nome: 'Paguroidea', classe: 'Tank', con:5, for:1, des:0, int:1, ins:4, car:-2, ca:16, altura:1.2, circulos:1 },
+            { nome: 'Squid', classe: 'Assassino', con:1, for:6, des:2, int:1, ins:-2, car:0, ca:10, altura:2.0, circulos:0 },
+            { nome: 'Tortuga', classe: 'Tank', con:8, for:0, des:-4, int:0, ins:0, car:2, ca:18, altura:1.0, circulos:0 },
+            { nome: 'Tutubarão', classe: 'Brutamontes', con:2, for:8, des:0, int:0, ins:0, car:-4, ca:12, altura:3.5, circulos:0 },
+        ];
+
+        // ===== HABILIDADES =====
+        const racasHabilidades = {
+            'Orcinus': {
+                habilidades: [
+                    { nome: 'Eco de Caça', desc: 'Emite uma onda sonora de alta frequência que mapeia o ambiente.' },
+                    { nome: 'Oportunidade', desc: 'Se o inimigo estiver com menos de 35% de HP, Orcinus causa dano crítico.' },
+                    { nome: 'Parede de Bolhas', desc: 'Dispara uma explosão de ar criando parede de bolhas densas.' },
+                    { nome: 'Playground Caótico', desc: 'Ao acerto crítico, Orcinus inicia ofensiva coordenada com aliados.' }
+                ],
+                passivas: [
+                    { nome: 'Instinto de Matilha', desc: 'Com mínimo de 2 aliados próximos, toda a equipe recebe 1d4 de dano reduzido.' },
+                    { nome: 'Ressonância Interna', desc: 'Quando "Eco de Caça" é usado em locais fechados, causa dano adicional.' }
+                ]
+            },
+            'Arapaima': {
+                habilidades: [
+                    { nome: 'Aquecimento', desc: 'Ouriça suas escamas, convertendo 20% da armadura em dano e velocidade.' },
+                    { nome: 'Contra-Ataque', desc: 'Quando receber um ataque direto, pode tentar revidar.' },
+                    { nome: 'Pressão Interna', desc: 'A 50% do HP, pode gastar oxigênio para criar uma onda de choque.' },
+                    { nome: 'Arrasto', desc: 'Avança até 10 metros em linha reta, desferindo um soco com força aumentada.' }
+                ],
+                passivas: [
+                    { nome: 'Perseverança', desc: '+5 de FOR a cada 30 minutos de oxigênio gasto.' },
+                    { nome: 'Escamas de Ferro', desc: 'Danos de impacto são distribuídos igualmente, reduzindo em 25% o dano total.' },
+                    { nome: 'Resistência Pré-Histórica', desc: 'Enquanto Aquecimento desativado, reduz 1d8 de dano de ataques perfurantes.' }
+                ]
+            },
+            'Axolot': {
+                habilidades: [
+                    { nome: 'Laço que Une', desc: 'Custo: 5 HP por rodada. Vincula-se a um aliado a até 10m, compartilhando metade do dano recebido.' },
+                    { nome: 'Simbiose', desc: 'O Axolot pode doar um membro a um aliado: Perde 25% da vida máxima, mas concede regeneração ao aliado.' },
+                    { nome: 'Orar', desc: 'Custo: 4 HP. Cura 10 HP + 1d8 de todos os aliados em até 10m.' },
+                    { nome: 'Sacrifício', desc: 'Ao zerar círculos voluntariamente, todos os aliados em até 15m recebem cura máxima.' }
+                ],
+                passivas: [
+                    { nome: 'Efeito Base', desc: 'Sempre que curar aliados com menos da metade da vida, o valor da cura é dobrado.' },
+                    { nome: 'Anomalidade', desc: 'Regeneração passiva de 4 HP por turno. Aumenta +2 por nível de círculo.' },
+                    { nome: 'Mar de Contenção', desc: 'Em raio de 8m: aliados recebem -3 de dano, inimigos sofrem -1d6 em ataques.' },
+                    { nome: 'Voto da Dor Viva', desc: 'Quando aliado em até 10m sofrer dano, pode absorver metade do dano.' },
+                    { nome: 'Graça Abissal', desc: 'Aliados em até 10m não morrem ao chegar a 0 HP — entram em estado de agonia por 2 turnos.' },
+                    { nome: 'Conversão Sacrificial', desc: 'Sempre que perder vida por habilidades próprias, aliado à sua escolha recupera o dobro.' }
+                ]
+            },
+            'Bagre': {
+                habilidades: [
+                    { nome: 'Glutão', desc: 'Quando o alvo estiver debilitado, pode rolar 1d30: 29–30: o digere instantaneamente.' },
+                    { nome: 'Regurgitar', desc: 'Alvos ingeridos podem ser regurgitados em forma de ácido, causando dano em área.' },
+                    { nome: 'Assimilar', desc: 'Alvos ingeridos podem ser digeridos para assimilar sua composição genética.' },
+                    { nome: 'Eructação', desc: 'Após ingerir um alvo, pode arrotar liberando efeitos distintos baseado no tipo de criatura.' }
+                ],
+                passivas: [
+                    { nome: 'Condensar Massa', desc: 'Para cada criatura assimilada, recebe +5% de tamanho. A cada 5 assimilados, ganha +1 em atributo físico.' },
+                    { nome: 'Muco', desc: 'Criaturas ingeridas não podem usar teleporte, tornar-se intangíveis ou escapar por meios mágicos.' },
+                    { nome: 'Extremidade', desc: 'Recebe 10 HP por ponto em CON (outras raças recebem apenas 5 HP por ponto).' }
+                ]
+            },
+            'Electrophorus': {
+                habilidades: [
+                    { nome: 'Eletrizar', desc: 'Entra em estado de descarga constante: Emite eletricidade passiva em área, causando dano gradual.' },
+                    { nome: 'Muco Condutor', desc: 'Libera nuvem espessa que reduz movimentação e percepção dos inimigos.' },
+                    { nome: 'Pele Isolante', desc: 'Camada de eletricidade defensiva: Absorve até 30% do dano recebido e redireciona ao atacante.' },
+                    { nome: 'Sobrecarga', desc: 'Quando atinge 100 de energia cinética, entra em estado de sobrecarga, dobrando dano elétrico.' }
+                ],
+                passivas: [
+                    { nome: 'Núcleo de Choque', desc: 'Cada ataque físico gera 10 de energia cinética. Absorve dano elétrico para converter em energia.' },
+                    { nome: 'Coração de Raio', desc: '1x por dia, ao cair a 0 de vida, descarrega toda energia e volta com 50% de HP.' }
+                ]
+            },
+            'Feralligator': {
+                habilidades: [
+                    { nome: 'Fúria', desc: 'Ao entrar em combate ou sofrer dano, entra em fúria: Ganha +5 em dano e velocidade.' },
+                    { nome: 'Dilacerar', desc: 'Mordida brutal que se transforma em sequência de golpes: Causa dano inicial e sangramento.' },
+                    { nome: 'Emboscada Submersa', desc: 'Oculta-se na água e investe contra a presa. Dano: 2d4 + FOR, surpreendendo o alvo.' },
+                    { nome: 'Giro da Morte', desc: 'Quando HP do alvo estiver abaixo de 15%, pode tentar golpe final que causa dano massivo.' }
+                ],
+                passivas: [
+                    { nome: 'Fome de Sangue', desc: 'A cada 10 HP perdido, ganha +4 de dano adicional. Ao abater, recupera 5% de HP.' }
+                ]
+            },
+            'Jaraia': {
+                habilidades: [
+                    { nome: 'Ferrão Neurotóxico', desc: 'Ataca com o ferrão da cauda, injetando toxina psicoativa.' },
+                    { nome: 'Lábia', desc: 'Tenta convencer um inimigo ou NPC com mentiras refinadas.' },
+                    { nome: 'Hipnose', desc: 'Move o corpo em padrões que desorientam o alvo. Role 1d20 para sucesso.' },
+                    { nome: 'Counter Beam', desc: 'Absorve energia de fontes externas para canalizar um feixe de energia pura.' }
+                ],
+                passivas: [
+                    { nome: 'Corpo Imune', desc: 'Imunidade a veneno e toxinas.' },
+                    { nome: 'Veneno Evolutivo', desc: '"Ferrão Neurotóxico" recebe +1d8 de dano por nível.' },
+                    { nome: 'Voz das Profundezas', desc: '1x a cada 4 rodadas, pronuncia frase que atinge todos os inimigos com confusão mental.' }
+                ]
+            },
+            'Labroide': {
+                habilidades: [
+                    { nome: 'Analisar', desc: 'Identifica parasitas, machucados ou efeitos negativos sobre criaturas.' },
+                    { nome: 'Transferência', desc: 'Transfere efeitos aplicados a um alvo para outro à sua escolha.' },
+                    { nome: 'Replicar', desc: 'Pode tentar conjurar uma magia com base em conhecimentos prévios.' },
+                    { nome: 'Sala de Cirurgia', desc: 'Custo: 5 círculos. Cria bisturi e aparelhos cirúrgicos para realizar procedimentos.' }
+                ],
+                passivas: [
+                    { nome: 'Dissecar', desc: 'Pode dissecar corpos mortos para entender a causa de sua morte.' },
+                    { nome: 'Interpretar', desc: '+2 em testes ao atacar seres dos quais possua conhecimento dissecado.' },
+                    { nome: 'Lobotomizar', desc: 'Quando aliados estiverem afetados pelo estágio 10 de Animalia, pode realizar lobotomia para resetar.' }
+                ]
+            },
+            'Lagostin': {
+                habilidades: [
+                    { nome: 'Debandada', desc: 'Avança em linha reta contra o alvo concentrando força na pinça.' },
+                    { nome: 'Evasão', desc: 'Pode tentar desviar de um ataque. Usuário e alvo rolam 1d20.' },
+                    { nome: 'Rumo à Glória', desc: 'Assume a linha de frente e inspira aliados em raio de 10m.' },
+                    { nome: 'Dignidade', desc: 'Cria vínculo eterno com sua arma. A arma só pode ser portada por Lagostin.' }
+                ],
+                passivas: [
+                    { nome: 'Carapaça Orgânica', desc: 'Não pode usar armaduras artificiais. +2 CA a cada 3 níveis.' },
+                    { nome: 'Disciplina Militar', desc: '+2 em testes de CON e FOR. +3 contra medo, intimidação e controle mental.' },
+                    { nome: 'Corpo Hidrodinâmico', desc: 'Não recebe debuffs nas rolagens devido ao terreno.' },
+                    { nome: 'Código de Honra', desc: 'Ao proteger alguém indefeso: imunidade a controle de grupo e +5 CA por 2 rodadas.' },
+                    { nome: 'O que é ser Herói?', desc: '1x por campanha, se sofrer dano letal rola 1d30. Acima de 20, sobrevive com 1 HP.' }
+                ]
+            },
+            'Medusozoa': {
+                habilidades: [
+                    { nome: 'Voltagem Psíquica', desc: 'Dispara descarga elétrica moldada com magia pura. Dano: 2d8 + INT.' },
+                    { nome: 'Telepatia', desc: 'Custo: 2 círculos. Invade a mente do alvo, sondando seus pensamentos.' },
+                    { nome: 'Canalizar', desc: 'Foca internamente para regenerar mana. Recupera 1 círculo por rodada.' },
+                    { nome: 'Premonição', desc: 'Custo: 4 círculos. Projeta a mente no futuro do alvo por 3 segundos.' }
+                ],
+                passivas: [
+                    { nome: 'Sinestesia Espectral', desc: 'Imunidade a ataques elétricos e cortantes. Pode enxergar espectros e almas.' },
+                    { nome: 'Elo Mental Coletivo', desc: 'Cria teia mental entre aliados próximos. Pode transferir dano mental entre si.' }
+                ]
+            },
+            'Paguroidea': {
+                habilidades: [
+                    { nome: 'Taxidermia', desc: 'Corpos usados como hospedeiros duram o dobro do tempo normal.' },
+                    { nome: 'Cirurgia Predatória', desc: 'Se inimigo estiver com menos de 25% de HP, pode tentar roubar um membro.' },
+                    { nome: 'Mímico Corpóreo', desc: 'Enquanto habita um corpo, copia todas as capacidades físicas do hospedeiro.' },
+                    { nome: 'Frankenstein', desc: 'Junta partes de corpos mortos para formar um corpo temporário.' }
+                ],
+                passivas: [
+                    { nome: 'Armadura Hóspede', desc: 'Enquanto em corpo hospedeiro: +15% de armadura e HP. Redução de dano em 10%.' },
+                    { nome: 'Memória Muscular', desc: 'Após habitar corpo por 3 turnos, memoriza uma habilidade física do hospedeiro.' },
+                    { nome: 'Parasita Ancestral', desc: 'Ao ser morto, pode infestar inimigo com menos de 20% de HP para assumir controle.' }
+                ]
+            },
+            'Squid': {
+                habilidades: [
+                    { nome: 'Camuflagem Aquática', desc: 'Libera nuvem de tinta que ofusca a visão: Criaturas têm desvantagem em ataques.' },
+                    { nome: 'Técnica das Sombras', desc: 'Causa 3d8 de dano. Se furtivo, recebe acréscimo de dano de 50%.' },
+                    { nome: 'Visão Aguçada', desc: 'Custo: 2 círculos. Olhos detectam pontos vitais com extrema precisão.' },
+                    { nome: 'Vórtex Abissal', desc: '1x por dia cria um redemoinho que suga o inimigo para uma dimensão aquática.' }
+                ],
+                passivas: [
+                    { nome: 'Veneno Abissal', desc: 'Tentáculos paralisam membros. Rola 1d20 ao acertar ataque para paralisia.' },
+                    { nome: 'Ambidestria Extrema', desc: 'Pode usar até 4 armas leves simultaneamente. Se os 4 ataques acertarem, causa dano massivo.' }
+                ]
+            },
+            'Tortuga': {
+                habilidades: [
+                    { nome: 'Encolher', desc: 'Retrai-se dentro do casco. Aumenta Armadura Total em +50%, mas não pode atacar.' },
+                    { nome: 'Crunch', desc: 'Pode morder o alvo com seu bico. Causa dano equivalente a 1d8 + FOR.' },
+                    { nome: 'Apneia', desc: 'Pode ficar até 12 horas sem respirar. (+2 horas de duração por nível).' },
+                    { nome: 'Rolagem', desc: 'Entra no casco e se lança violentamente contra o inimigo. Causa dano em área.' }
+                ],
+                passivas: [
+                    { nome: 'Escudo de Vida', desc: 'Para cada 5 pontos de armadura, ganha +15 HP máximo. Recebe metade do dano perfurante.' },
+                    { nome: 'Vínculo de Pedra e Mar', desc: 'Quando a vida cair abaixo de 25%, recebe +20% de armadura e regeneração rápida.' },
+                    { nome: 'Imunidade', desc: 'Imunidade a ataques elétricos.' }
+                ]
+            },
+            'Tutubarão': {
+                habilidades: [
+                    { nome: 'Presença Predadora', desc: 'O olhar invade a mente da presa. Alvo faz teste de sanidade ou fica apavorado.' },
+                    { nome: 'Guilhotina', desc: 'Requer status "Medo" no alvo. Causa 4d10 de dano perfurante, ignorando 50% de armadura.' },
+                    { nome: 'Quebra-Crânio', desc: 'Agarra dois inimigos de tamanho médio e os colide. Causa dano e atordoa.' },
+                    { nome: 'Suplex', desc: 'Agarra um alvo e salta, esmagando-o contra o solo. Dano: 5d8 + FOR.' }
+                ],
+                passivas: [
+                    { nome: 'Fome Ancestral', desc: 'Toda vez que um inimigo morre, recupera 20% do HP máximo. Pode exceder temporariamente.' }
+                ]
+            },
+        };
+
+        // ===== ARMAZENAMENTO (IndexedDB + localStorage fallback) =====
+        const _DB_NAME = 'livro_vida_idb_v2';
+        let _idb = null;
+        
+        function _openDB() {
+            if (_idb) return Promise.resolve(_idb);
+            return new Promise((res, rej) => {
+                const r = indexedDB.open(_DB_NAME, 1);
+                r.onupgradeneeded = e => e.target.result.createObjectStore('kv');
+                r.onsuccess = e => { _idb = e.target.result; res(_idb); };
+                r.onerror = () => rej(r.error);
+            });
+        }
+        
+        async function _dbGet(key) {
+            try {
+                const db = await _openDB();
+                return new Promise(res => {
+                    const r = db.transaction('kv','readonly').objectStore('kv').get(key);
+                    r.onsuccess = () => res(r.result ?? null);
+                    r.onerror = () => res(null);
+                });
+            } catch { return null; }
+        }
+        
+        async function _dbSet(key, val) {
+            try {
+                const db = await _openDB();
+                await new Promise((res, rej) => {
+                    const tx = db.transaction('kv','readwrite');
+                    tx.objectStore('kv').put(val, key);
+                    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+                });
+            } catch {}
+            try { localStorage.setItem(key, val); } catch {}
+        }
+        
+        async function _loadInitialData() {
+            let chars = await _dbGet('livro_vida_v2');
+            let curr = await _dbGet('livro_vida_curr_v2');
+            if (!chars) chars = localStorage.getItem('livro_vida_v2');
+            if (!curr) curr = localStorage.getItem('livro_vida_curr_v2');
+            return { chars: chars ? JSON.parse(chars) : {}, curr: curr || 'default' };
+        }
+
+        // ===== STATE =====
+        let characters = {};
+        let currentId = 'default';
+        
+        const defaultState = {
+            name:'Novo Herói', class:'Nenhuma', level:1, age:20, raca:'Nenhuma',
+            abates:0, animalia:0, ar:0,
+            ritualStage:0, animaliaMax:10,
+            baseAttrs: { con:0, for:0, des:0, int:0, ins:0, car:0 },
+            bonusAttrs: { con:0, for:0, des:0, int:0, ins:0, car:0 },
+            circulos:'0', baseAltura:1.7, baseCa:0,
+            bonusHP:0, bonusCA:0, bonusCirc:0, bonusAR:0,
+            textData:{ itens:'', rituais:'', pactos:'', curse:'', maldição:'' }
+        };
+
+        // ===== INIT =====
+        async function init() {
+            const saved = await _loadInitialData();
+            characters = saved.chars;
+            currentId = saved.curr;
+            if (Object.keys(characters).length === 0)
+                characters['default'] = JSON.parse(JSON.stringify(defaultState));
+            renderRacas();
+            updateSelector();
+            loadCharacter(currentId);
+        }
+
+        function updateSelector() {
+            const sel = document.getElementById('char-selector');
+            sel.innerHTML = '';
+            for (const id in characters) {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = characters[id].name;
+                if (id === currentId) opt.selected = true;
+                sel.appendChild(opt);
+            }
+        }
+
+        // ===== LOAD CHARACTER =====
+        function loadCharacter(id) {
+            const state = characters[id] || characters[Object.keys(characters)[0]];
+            currentId = id;
+            
+            // Retrocompatibilidade
+            if (state.ritualStage === undefined) state.ritualStage = 0;
+            if (state.animaliaMax === undefined) state.animaliaMax = (state.ritualStage >= 3) ? 3000 : 10;
+            if (state.bonusHP === undefined) state.bonusHP = 0;
+            if (state.bonusCA === undefined) state.bonusCA = 0;
+            if (state.bonusCirc=== undefined) state.bonusCirc= 0;
+            if (state.bonusAR === undefined) state.bonusAR = 0;
+            
+            const semRaca = !state.raca || state.raca === 'Nenhuma' || state.raca === 'NENHUMA';
+            
+            if (semRaca) {
+                state.baseCa = 0; state.ar = 0; state.bonusCA = 0; state.bonusAR = 0;
+            } else {
+                const racaData = racas.find(r => r.nome.toLowerCase() === state.raca.trim().toLowerCase());
+                if (racaData) {
+                    state.baseCa = racaData.ca;
+                    state.baseAltura= racaData.altura;
+                    state.circulos = racaData.circulos;
+                    if (state.ar === undefined) state.ar = 0;
+                    state.bonusAttrs = { con:racaData.con, for:racaData.for, des:racaData.des, int:racaData.int, ins:racaData.ins, car:racaData.car };
+                    state.raca = racaData.nome;
+                    state.class = racaData.classe;
+                }
+            }
+            
+            document.getElementById('char-name').value = state.name;
+            document.getElementById('class-display-name').textContent = state.class || 'NENHUMA';
+            document.getElementById('raca-display-name').textContent = state.raca || 'NENHUMA';
+            document.getElementById('char-lv').value = Math.min(state.level, 8);
+            document.getElementById('char-age').value = state.age;
+            document.getElementById('abates-input').value = state.abates || 0;
+            document.getElementById('animalia-val').value = state.animalia|| 0;
+            
+            const td = state.textData || {};
+            document.getElementById('itens').value = td.itens || '';
+            document.getElementById('rituais').value = td.rituais || '';
+            document.getElementById('pactos').value = td.pactos || '';
+            document.getElementById('maldição-text').value = td.maldição || '';
+            document.getElementById('curse-text').value = td.curse || '';
+            
+            renderHabilidades(state.raca);
+            atualizarFotoDOM(state.fotoPerfil || null);
+            updateUI();
+        }
+
+        // ===== SAVE =====
+        async function saveCurrentCharacter() {
+            const state = characters[currentId];
+            if (!state) return;
+            
+            state.name = document.getElementById('char-name').value || 'Sem Nome';
+            state.level = Math.min(parseInt(document.getElementById('char-lv').value), 8);
+            state.age = parseInt(document.getElementById('char-age').value);
+            state.abates = parseInt(document.getElementById('abates-input').value);
+            state.animalia= parseInt(document.getElementById('animalia-val').value);
+            
+            state.textData = {
+                itens: document.getElementById('itens').value,
+                rituais: document.getElementById('rituais').value,
+                pactos: document.getElementById('pactos').value,
+                maldição: document.getElementById('maldição-text').value,
+                curse: document.getElementById('curse-text').value
+            };
+            
+            await _dbSet('livro_vida_v2', JSON.stringify(characters));
+            await _dbSet('livro_vida_curr_v2', currentId);
+            updateSelector();
+            
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 1500);
+        }
+
+        // ===== PONTOS =====
+        function calculatePoints() {
+            const state = characters[currentId];
+            const level = Math.min(parseInt(document.getElementById('char-lv').value) || 1, 8);
+            const totalPoints = 15 + ((level - 1) * 10);
+            const spent = Object.values(state.baseAttrs).reduce((a,b) => a+b, 0);
+            return totalPoints - spent;
+        }
+
+        function modAttr(attr, delta) {
+            const state = characters[currentId];
+            if (state.animalia >= state.animaliaMax && state.ritualStage < 3) return;
+            const remaining = calculatePoints();
+            if (delta > 0 && remaining < 1) return;
+            if (delta < 0 && state.baseAttrs[attr] <= 0) return;
+            if (delta > 0 && state.baseAttrs[attr] >= 50) return;
+            state.baseAttrs[attr] += delta;
+            updateUI();
+        }
+
+        // ===== SET RAÇA =====
+        function setRaca(r) {
+            const state = characters[currentId];
+            if (state.animalia >= state.animaliaMax && state.ritualStage < 3) return;
+            state.raca = r.nome;
+            state.class = r.classe;
+            state.bonusAttrs = { con:r.con, for:r.for, des:r.des, int:r.int, ins:r.ins, car:r.car };
+            state.circulos = r.circulos;
+            state.baseAltura = r.altura;
+            state.baseCa = r.ca;
+            state.ar = 0;
+            state.bonusAR = 0;
+            state.bonusHP = 0;
+            state.bonusCA = 0;
+            state.bonusCirc = 0;
+            document.getElementById('raca-display-name').textContent = r.nome.toUpperCase();
+            document.getElementById('class-display-name').textContent = r.classe.toUpperCase();
+            renderHabilidades(r.nome);
+            closeModal('modal-raca');
+            updateUI();
+        }
+
+        // ===== UPDATE UI =====
+        function updateUI() {
+            const state = characters[currentId];
+            if (!state) return;
+            
+            const animalia = state.animalia;
+            const animaliaMax = state.animaliaMax || 10;
+            const ritualStage = state.ritualStage || 0;
+            const isFeral = animalia >= animaliaMax && ritualStage < 3;
+            
+            document.getElementById('max-animalia-label').textContent = animaliaMax;
+            
+            // FERAL
+            const banner = document.getElementById('feral-banner');
+            const container = document.getElementById('main-container');
+            const saveBtn = document.getElementById('btn-save');
+            const newBtn = document.getElementById('btn-new');
+            const racaBtn = document.getElementById('raca-icon');
+            
+            if (isFeral) {
+                banner.style.display = 'flex';
+                container.classList.add('is-feral-mode');
+                saveBtn.disabled = true; newBtn.disabled = true;
+                racaBtn.style.pointerEvents = 'none';
+            } else {
+                banner.style.display = 'none';
+                container.classList.remove('is-feral-mode');
+                saveBtn.disabled = false; newBtn.disabled = false;
+                racaBtn.style.pointerEvents = 'auto';
+            }
+            
+            // RITUAL BTN
+            const ritualBtn = document.getElementById('btn-ritual');
+            if (animalia === 9 && ritualStage < 3) {
+                ritualBtn.style.display = 'block';
+                ritualBtn.textContent = `REALIZAR RITUAL ${ritualStage + 1}`;
+            } else {
+                ritualBtn.style.display = 'none';
+            }
+            
+            const remaining = calculatePoints();
+            document.getElementById('points-left').textContent = remaining;
+            
+            const totals = {};
+            ['con','for','des','int','ins','car'].forEach(k => {
+                totals[k] = state.baseAttrs[k] + state.bonusAttrs[k];
+            });
+            
+            // CÁLCULOS BASE
+            let hpBonus=0, danoBonus=0, caBonus=0, regenBonus=0, alturaBonus=0,
+                desBonusTest=0, furtivBonusCombat=0, curaBonus=0;
+            
+            const basePv = totals.con * 5;
+            let resVenenos = Math.floor(totals.con / 3);
+            let cargaFor = Math.floor(totals.for / 2) * 10;
+            let atletismo = Math.floor(totals.des / 3);
+            let furtividade = Math.floor(totals.des / 5);
+            let investigacao = Math.floor(totals.int / 3);
+            let conhecimento = Math.floor(totals.int / 3) * 2;
+            let arcano = Math.floor(totals.int / 5);
+            let autopreserv = Math.floor(totals.ins / 3);
+            let intuicao = Math.floor(totals.ins / 3);
+            let sobrevivencia = Math.floor(totals.ins / 5);
+            let lideranca = Math.floor(totals.car / 3) * 2;
+            let manipulacao = Math.floor(totals.car / 5);
+            let perf = totals.car;
+            
+            const charClass = state.class;
+            
+            if (charClass === 'Brutamontes') danoBonus = Math.floor(totals.for / 5) * 10;
+            if (charClass === 'Monstro Guerreiro') { hpBonus = Math.floor(totals.con/5)*5; danoBonus = Math.floor(totals.for/5)*5; }
+            if (charClass === 'Assassino') { desBonusTest = Math.floor(totals.des/5)+Math.floor(totals.int/5); furtivBonusCombat = Math.floor(totals.des/3); }
+            if (charClass === 'Clérigo') curaBonus = Math.floor(totals.car/5)*2;
+            
+            if (state.raca === 'Tortuga') hpBonus += Math.floor((state.bonusAR||0)/5)*15;
+            
+            const finalPvComTortuga = basePv + hpBonus;
+            const finalPvTotal = finalPvComTortuga + (state.bonusHP || 0);
+            
+            if (charClass === 'Tank') regenBonus = Math.floor(totals.con / 5);
+            
+            let arAutoBonus = 0;
+            if (charClass === 'Tank') {
+                arAutoBonus = Math.floor(finalPvTotal / 20);
+                alturaBonus = state.raca === 'Tortuga'
+                    ? Math.floor(finalPvTotal / 50) * 0.5
+                    : Math.floor(finalPvTotal / 200);
+            }
+            
+            const extraCircles = Math.floor(arcano / 5);
+            
+            // FERAL — zera perícias
+            if (isFeral) {
+                const savedDano = danoBonus, savedCarga = cargaFor;
+                const soma = resVenenos+danoBonus+(totals.for+danoBonus)+cargaFor+atletismo+furtividade+desBonusTest+
+                    furtivBonusCombat+investigacao+conhecimento+arcano+intuicao+sobrevivencia+lideranca+manipulacao+perf+curaBonus+regenBonus;
+                resVenenos=0;danoBonus=0;cargaFor=0;atletismo=0;furtividade=0;desBonusTest=0;
+                furtivBonusCombat=0;investigacao=0;conhecimento=0;arcano=0;intuicao=0;
+                sobrevivencia=0;lideranca=0;manipulacao=0;perf=0;curaBonus=0;
+                autopreserv += soma;
+                danoBonus = savedDano; cargaFor = savedCarga;
+            }
+            
+            // PÓS-RITUAL 1 e 2
+            const isRitualDebuffActive = (ritualStage===1||ritualStage===2) && animalia>=animaliaMax;
+            if (isRitualDebuffActive) {
+                const soma = resVenenos+atletismo+furtividade+desBonusTest+furtivBonusCombat+
+                    investigacao+conhecimento+arcano+intuicao+sobrevivencia+lideranca+manipulacao+perf+curaBonus+regenBonus;
+                resVenenos=0;atletismo=0;furtividade=0;desBonusTest=0;furtivBonusCombat=0;
+                investigacao=0;conhecimento=0;arcano=0;intuicao=0;sobrevivencia=0;
+                lideranca=0;manipulacao=0;perf=0;curaBonus=0;regenBonus=0;
+                autopreserv += soma;
+            }
+            
+            // PÓS-RITUAL 3 — multiplica tudo
+            const isPostRitual3 = (ritualStage >= 3);
+            if (isPostRitual3 && animalia > 0) {
+                const mult = animalia;
+                resVenenos*=mult; atletismo*=mult; furtividade*=mult; desBonusTest*=mult;
+                furtivBonusCombat*=mult; investigacao*=mult; conhecimento*=mult; arcano*=mult;
+                autopreserv*=mult; intuicao*=mult; sobrevivencia*=mult; lideranca*=mult;
+                manipulacao*=mult; perf*=mult; curaBonus*=mult; regenBonus*=mult;
+                danoBonus*=mult; cargaFor*=mult; caBonus*=mult;
+                
+                Object.keys(totals).forEach(k => { totals[k]*=mult; });
+                
+                const bonusARMult = (state.bonusAR||0)*mult;
+                
+                if (charClass==='Tank') {
+                    let hpMult = finalPvTotal * mult;
+                    if (state.raca==='Tortuga') {
+                        hpMult = (basePv + Math.floor((state.bonusAR||0)/5)*15*mult + (state.bonusHP||0)) * mult;
+                        alturaBonus = Math.floor(hpMult/50)*0.5;
+                    } else {
+                        alturaBonus = Math.floor(hpMult/200);
+                    }
+                    arAutoBonus = Math.floor(hpMult/20);
+                } else {
+                    arAutoBonus *= mult; alturaBonus *= mult;
+                }
+                
+                state._postRitual3HpMult = mult;
+                state._postRitual3BonusAR = bonusARMult;
+            } else {
+                state._postRitual3HpMult = 1;
+                state._postRitual3BonusAR = undefined;
+            }
+            
+            // RENDER ATRIBUTOS
+            const attrContainer = document.getElementById('attr-container');
+            attrContainer.innerHTML = '';
+            
+            const configs = [
+                { s:'CON', k:'con', p:[
+                    {n:'Res. Venenos/Doença', v:resVenenos},
+                    {n:'HP p/ Kg', v:5, unit:'/hp'},
+                    {n:'Regeneração', v:regenBonus, hide:regenBonus===0}
+                ]},
+                { s:'FOR', k:'for', p:[
+                    {n:'Dano Físico', v:totals.for+danoBonus},
+                    {n:'Intimidação', v:(isFeral||isRitualDebuffActive)?0:Math.floor(totals.for/5)},
+                    {n:'Segurar/Empurrar', v:cargaFor, unit:'kg'}
+                ]},
+                { s:'DES', k:'des', p:[
+                    {n:'Precisão', v:(isFeral||isRitualDebuffActive)?0:totals.des},
+                    {n:'Atletismo', v:atletismo},
+                    {n:'Furtividade', v:furtividade},
+                    {n:'Bônus Assassino', v:desBonusTest, hide:charClass!=='Assassino'},
+                    {n:'Combate (Furtivo)', v:furtivBonusCombat, hide:charClass!=='Assassino'||furtivBonusCombat===0}
+                ]},
+                { s:'INT', k:'int', p:[
+                    {n:'Natureza', v:(isFeral||isRitualDebuffActive)?0:totals.int},
+                    {n:'Investigação', v:investigacao},
+                    {n:'Conhecimento', v:conhecimento},
+                    {n:'Arcano', v:arcano}
+                ]},
+                { s:'INS', k:'ins', p:[
+                    {n:'Autopreservação', v:autopreserv},
+                    {n:'Intuição', v:intuicao},
+                    {n:'Sobrevivência', v:sobrevivencia}
+                ]},
+                { s:'CAR', k:'car', p:[
+                    {n:'Performance', v:(isFeral||isRitualDebuffActive)?0:perf},
+                    {n:'Liderança', v:lideranca},
+                    {n:'Manipulação', v:manipulacao},
+                    {n:'Cura Bônus', v:curaBonus, hide:curaBonus===0}
+                ]}
+            ];
+            
+            configs.forEach(cfg => {
+                const p_html = cfg.p.filter(x=>!x.hide).map(x=>
+                    `<div class="pericia-item"><span>${x.n}:</span><b>+${fmtNum(x.v)}${x.unit||''}</b></div>`
+                ).join('');
+                
+                attrContainer.innerHTML += `
+                <div class="attr-card">
+                    <div class="attr-main">
+                        <span class="attr-sigla">${cfg.s}</span>
+                        <div class="attr-controls">
+                            <button class="btn-circle" onclick="modAttr('${cfg.k}',-1)" ${(state.baseAttrs[cfg.k]<=0||isFeral) ? 'disabled' : ''}>-</button>
+                            <span class="attr-val">${fmtNum(totals[cfg.k])}</span>
+                            <button class="btn-circle" onclick="modAttr('${cfg.k}',1)" ${(remaining<1||isFeral||state.animalia>=state.animaliaMax) ? 'disabled' : ''}>+</button>
+                        </div>
+                    </div>
+                    <div class="pericia-list">${p_html}</div>
+                </div>`;
+            });
+            
+            // STATUS FINAIS
+            const mult3 = state._postRitual3HpMult || 1;
+            const hpTotal = finalPvTotal * mult3;
+            const caBase = state.baseCa + (state.bonusCA||0);
+            const caTotal = caBase * mult3 + caBonus;
+            const bonusARDisplay = (state._postRitual3BonusAR !== undefined) ? state._postRitual3BonusAR : (state.bonusAR||0);
+            const arTotal = (state.ar!=null?state.ar:0) + bonusARDisplay + arAutoBonus;
+            const circulosBase = isNaN(parseInt(state.circulos)) ? 0 : parseInt(state.circulos);
+            const circulosTotal = Math.min(circulosBase + extraCircles + (state.bonusCirc||0), 10);
+            
+            document.getElementById('pv-val').value = fmtNum(hpTotal);
+            document.getElementById('pv-val').title = Math.round(hpTotal).toLocaleString('pt-BR');
+            document.getElementById('ca-display').value = fmtNum(caTotal);
+            document.getElementById('ca-display').title = Math.round(caTotal).toLocaleString('pt-BR');
+            document.getElementById('ar-val').value = fmtNum(arTotal);
+            document.getElementById('ar-val').title = Math.round(arTotal).toLocaleString('pt-BR');
+            document.getElementById('kg-val').textContent = fmtNum(hpTotal*5);
+            document.getElementById('circles-val').value = circulosTotal;
+            document.getElementById('char-height').value = (state.baseAltura + alturaBonus).toFixed(1)+'m';
+            
+            const animaliaInput = document.getElementById('animalia-val');
+            animaliaInput.value = state.animalia;
+            animaliaInput.readOnly = ritualStage < 3;
+        }
+
+        // ===== FORMAT NÚMERO =====
+        function fmtNum(n) {
+            n = Math.round(n);
+            if (n >= 1e9) return (n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
+            if (n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
+            if (n >= 1e4) return (n/1e3).toFixed(1).replace(/\.0$/,'')+'K';
+            return n.toString();
+        }
+
+        // ===== STATUS MANUAL =====
+        function modStatus(tipo, delta) {
+            const state = characters[currentId];
+            if (!state) return;
+            if (tipo==='hp') state.bonusHP = (state.bonusHP ||0)+delta;
+            if (tipo==='ca') state.bonusCA = (state.bonusCA ||0)+delta;
+            if (tipo==='circ') state.bonusCirc = (state.bonusCirc||0)+delta;
+            if (tipo==='ar') state.bonusAR = (state.bonusAR ||0)+delta;
+            updateUI();
+        }
+
+        function onStatusInput(tipo) {
+            const state = characters[currentId];
+            if (!state) return;
+            
+            function parseNum(str) {
+                if (!str) return 0;
+                str = String(str).trim().replace(',','.');
+                if (/K$/i.test(str)) return Math.round(parseFloat(str)*1e3);
+                if (/M$/i.test(str)) return Math.round(parseFloat(str)*1e6);
+                if (/B$/i.test(str)) return Math.round(parseFloat(str)*1e9);
+                return parseInt(str)||0;
+            }
+            
+            if (tipo==='hp') {
+                const auto = (() => {
+                    const t={};
+                    ['con','for','des','int','ins','car'].forEach(k=>{t[k]=state.baseAttrs[k]+state.bonusAttrs[k];});
+                    let bonus=0;
+                    if (state.class==='Monstro Guerreiro') bonus=Math.floor(t.con/5)*5;
+                    if (state.raca==='Tortuga') bonus=Math.floor((state.bonusAR||0)/5)*15;
+                    return t.con*5+bonus;
+                })();
+                const mult3=state._postRitual3HpMult||1;
+                state.bonusHP = Math.round(parseNum(document.getElementById('pv-val').value)/mult3)-auto;
+            }
+            
+            if (tipo==='ar') {
+                const t={};
+                ['con','for','des','int','ins','car'].forEach(k=>{t[k]=state.baseAttrs[k]+state.bonusAttrs[k];});
+                const hpBonusLocal = state.class==='Monstro Guerreiro' ? Math.floor(t.con/5)*5 : 0;
+                const tortugaHpLocal= state.raca==='Tortuga' ? Math.floor((state.bonusAR||0)/5)*15 : 0;
+                const basePvLocal = t.con*5+hpBonusLocal+tortugaHpLocal+(state.bonusHP||0);
+                const arAuto = state.class==='Tank' ? Math.floor(basePvLocal/20) : 0;
+                const mult3 = state._postRitual3HpMult||1;
+                state.bonusAR = Math.round(parseNum(document.getElementById('ar-val').value)/mult3)-(state.ar!=null?state.ar:0)-arAuto;
+            }
+            
+            if (tipo==='ca') {
+                const mult3=state._postRitual3HpMult||1;
+                state.bonusCA = Math.round(parseNum(document.getElementById('ca-display').value)/mult3)-state.baseCa;
+            }
+            
+            if (tipo==='circ') {
+                const t={};
+                ['con','for','des','int','ins','car'].forEach(k=>{t[k]=state.baseAttrs[k]+state.bonusAttrs[k];});
+                const arc=Math.floor(t.int/5);
+                const extra=Math.floor(arc/5);
+                const base=isNaN(parseInt(state.circulos))?0:parseInt(state.circulos);
+                state.bonusCirc=(parseInt(document.getElementById('circles-val').value)||0)-base-extra;
+            }
+        }
+
+        // ===== ABATES =====
+        function modAbates(delta) {
+            const state = characters[currentId];
+            if (state.animalia >= state.animaliaMax && state.ritualStage < 3) return;
+            const el = document.getElementById('abates-input');
+            let val = parseInt(el.value)+delta;
+            if (val<0) val=0;
+            el.value=val;
+            syncAbates(val);
+        }
+
+        function syncAbates(val) {
+            const state = characters[currentId];
+            const aMax = state.animaliaMax||10;
+            state.animalia = Math.min(aMax, Math.floor((parseInt(val)||0)/50));
+            state.abates = parseInt(val)||0;
+            updateUI();
+        }
+
+        function onAnimaliaInput(val) {
+            const state = characters[currentId];
+            if (!state||state.ritualStage<3) return;
+            let num=parseInt(val);
+            if (isNaN(num)||num<0) num=0;
+            if (num>3000) num=3000;
+            state.animalia=num; state.abates=num*50;
+            document.getElementById('abates-input').value=state.abates;
+            document.getElementById('animalia-val').value=num;
+            updateUI();
+        }
+
+        function modAnimalia(delta) {
+            const state = characters[currentId];
+            const aMax = state.animaliaMax||10;
+            let val = state.animalia+delta;
+            if (val>=0 && val<=aMax) {
+                state.animalia=val; state.abates=val*50;
+                document.getElementById('abates-input').value=state.abates;
+                updateUI();
+            }
+        }
+
+        // ===== RITUAL =====
+        function realizarRitual() {
+            const state = characters[currentId];
+            if (!state||state.animalia<9) return;
+            const prox = state.ritualStage+1;
+            const descs = {
+                1:'Você está na borda da loucura. Realizar o Ritual I devolverá sua racionalidade e zerará sua Animalia.',
+                2:'O instinto consumiu você mais uma vez. O Ritual II pode restaurar o que resta da sua mente.',
+                3:'Ritual III — o último antes da transcendência. Após isso, os limites da Animalia se quebram para sempre.'
+            };
+            document.getElementById('ritual-modal-title').textContent = `RITUAL ${prox}`;
+            document.getElementById('ritual-modal-desc').textContent = descs[prox]||'Realizar o ritual zerará sua Animalia.';
+            document.getElementById('modal-ritual').style.display = 'flex';
+        }
+
+        function confirmarRitual() {
+            document.getElementById('modal-ritual').style.display='none';
+            const state = characters[currentId];
+            if (!state) return;
+            state.animalia=0; state.abates=0;
+            document.getElementById('abates-input').value=0;
+            document.getElementById('animalia-val').value=0;
+            state.ritualStage+=1;
+            if (state.ritualStage>=3) state.animaliaMax=3000;
+            const ritualNotes = document.getElementById('rituais');
+            ritualNotes.value += `\n[Ritual ${state.ritualStage} Realizado] - Animalia zerada.`;
+            state.textData.rituais = ritualNotes.value;
+            saveCurrentCharacter();
+            updateUI();
+        }
+
+        // ===== PERSONAGENS =====
+        function createNewCharacter() {
+            const id = 'c'+Date.now();
+            characters[id] = JSON.parse(JSON.stringify(defaultState));
+            currentId = id;
+            updateSelector();
+            loadCharacter(id);
+        }
+
+        function switchCharacter() {
+            currentId = document.getElementById('char-selector').value;
+            loadCharacter(currentId);
+        }
+
+        async function deleteCharacter() {
+            if (confirm('Deletar esta ficha permanentemente? Esta ação não pode ser desfeita.')) {
+                delete characters[currentId];
+                if (Object.keys(characters).length===0) {
+                    characters['default']=JSON.parse(JSON.stringify(defaultState));
+                    currentId='default';
+                } else {
+                    currentId=Object.keys(characters)[0];
+                }
+                await _dbSet('livro_vida_v2', JSON.stringify(characters));
+                await _dbSet('livro_vida_curr_v2', currentId);
+                location.reload();
+            }
+        }
+
+        // ===== RENDER RAÇAS =====
+        function renderRacas() {
+            const container = document.getElementById('raca-options');
+            container.innerHTML='';
+            racas.forEach(r => {
+                const item = document.createElement('div');
+                item.className='option-item';
+                item.onclick = () => setRaca(r);
+                item.innerHTML=`
+                    <strong style="color:white;font-size:0.85rem;">${r.nome.toUpperCase()}</strong>
+                    <div style="font-size:0.65rem;color:#777;margin-top:3px;">Classe: <b>${r.classe}</b></div>
+                    <div style="font-size:0.58rem;color:#555;margin-top:3px;">
+                        CON:${r.con} FOR:${r.for} DES:${r.des} INT:${r.int} INS:${r.ins} CAR:${r.car}
+                    </div>`;
+                container.appendChild(item);
+            });
+        }
+
+        // ===== RENDER HABILIDADES =====
+        function renderHabilidades(racaNome) {
+            const panel = document.getElementById('hab-panel');
+            if (!panel) return;
+            const data = racasHabilidades[racaNome];
+            if (!data) { panel.innerHTML='<span class="hab-empty">Selecione uma raça para ver as habilidades.</span>'; return; }
+            
+            let html='';
+            if (data.habilidades && data.habilidades.length) {
+                html+='<div class="hab-section-title">■■ Habilidades</div>';
+                data.habilidades.forEach(h => {
+                    const bc = h.lvl5?'badge-lvl5':'badge-hab';
+                    const bl = h.lvl5?'Lvl 5':'Hab';
+                    html+=`<div class="hab-item" onclick="this.classList.toggle('open')">
+                        <div class="hab-item-header">
+                            <span class="hab-badge ${bc}">${bl}</span>
+                            <span>${h.nome}</span>
+                            <i class="fas fa-chevron-down" style="margin-left:auto;font-size:0.6rem;color:#555;"></i>
+                        </div>
+                        <div class="hab-desc">${h.desc.replace(/\n/g,'<br>')}</div>
+                    </div>`;
+                });
+            }
+            
+            if (data.passivas && data.passivas.length) {
+                html+='<div class="hab-section-title">■ Passivas</div>';
+                data.passivas.forEach(p => {
+                    html+=`<div class="hab-item" onclick="this.classList.toggle('open')">
+                        <div class="hab-item-header">
+                            <span class="hab-badge badge-pass">Pas</span>
+                            <span>${p.nome}</span>
+                            <i class="fas fa-chevron-down" style="margin-left:auto;font-size:0.6rem;color:#555;"></i>
+                        </div>
+                        <div class="hab-desc">${p.desc.replace(/\n/g,'<br>')}</div>
+                    </div>`;
+                });
+            }
+            
+            panel.innerHTML=html;
+        }
+
+        // ===== TABS =====
+        function showTab(id, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if (btn) btn.classList.add('active');
+        }
+
+        function setNav(btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // ===== MODAL =====
+        function openModal(id) { document.getElementById(id).style.display='block'; }
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+
+        // ===== EXPORTAR / IMPORTAR =====
+        function exportarSave() {
+            const data = { characters, currentId };
+            const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'livro_da_vida_save.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        async function importarSave(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            try {
+                const data = JSON.parse(text);
+                if (!data.characters) throw new Error('Arquivo inválido');
+                characters = data.characters;
+                currentId = data.currentId || Object.keys(data.characters)[0];
+                await _dbSet('livro_vida_v2', JSON.stringify(characters));
+                await _dbSet('livro_vida_curr_v2', currentId);
+                updateSelector();
+                loadCharacter(currentId);
+                const toast = document.getElementById('toast');
+                toast.textContent='■ Save importado!';
+                toast.style.display='block';
+                setTimeout(()=>{ toast.style.display='none'; toast.textContent='✓ SALVO'; }, 2000);
+            } catch(e) {
+                alert('Erro ao importar: arquivo inválido ou corrompido.');
+            }
+            event.target.value='';
+        }
+
+        // ===== FOTO DE PERFIL =====
+        function carregarFoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                const state = characters[currentId];
+                if (state) state.fotoPerfil = dataUrl;
+                atualizarFotoDOM(dataUrl);
+            };
+            reader.readAsDataURL(file);
+            event.target.value='';
+        }
+
+        function atualizarFotoDOM(dataUrl) {
+            const img = document.getElementById('profile-img');
+            const ph = document.getElementById('profile-placeholder');
+            if (dataUrl) { img.src=dataUrl; img.style.display='block'; ph.style.display='none'; }
+            else { img.src=''; img.style.display='none'; ph.style.display='flex'; }
+        }
+
+        // ===== START =====
+        init();
+    </script>
+</body>
+</html>
